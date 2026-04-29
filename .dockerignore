@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+.env
+.env.*
+!.env.example
+Dockerfile*
+docker-compose*.yml
+.cursor
+coverage
+.turbo
+*.log
+public/sw.js
+public/workbox-*.js

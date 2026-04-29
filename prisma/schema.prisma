@@ -1,0 +1,245 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  PARENT
+  TEACHER
+  ADMIN
+}
+
+enum GuardianStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum HomeworkStatus {
+  PENDENTE
+  EM_CURSO
+  CONCLUIDO
+}
+
+enum MarkType {
+  TESTE
+  TRABALHO
+  ORAL
+  PROJETO
+  OUTRO
+}
+
+enum DifficultySeverity {
+  BAIXA
+  MEDIA
+  ALTA
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String
+  role          Role      @default(STUDENT)
+  /// Ano escolar (1–9) para alunos
+  gradeYear     Int?
+
+  schoolId String?
+  school     School? @relation(fields: [schoolId], references: [id])
+
+  teacherClasses Class[] @relation("TeacherClasses")
+  enrollments    Enrollment[]
+
+  guardianLinksAsParent   GuardianLink[] @relation("ParentGuardian")
+  guardianLinksAsStudent  GuardianLink[] @relation("StudentGuardian")
+  guardianInvitesSent     GuardianLink[] @relation("InviteCreator")
+
+  marks             Mark[]
+  homeworks         Homework[] @relation("StudentHomework")
+  homeworksAssigned Homework[] @relation("TeacherHomework")
+  studyBlocks       StudyBlock[]
+  difficulties Difficulty[]
+  subjects    Subject[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([role])
+}
+
+model School {
+  id      String  @id @default(cuid())
+  name    String
+  classes Class[]
+  users   User[]
+}
+
+model Class {
+  id         String  @id @default(cuid())
+  schoolId   String?
+  school     School? @relation(fields: [schoolId], references: [id], onDelete: SetNull)
+  name       String
+  year       Int
+  teacherId  String?
+  teacher    User?   @relation("TeacherClasses", fields: [teacherId], references: [id], onDelete: SetNull)
+  inviteCode String  @unique @default(cuid())
+
+  enrollments Enrollment[]
+  subjects    Subject[]
+  homeworks   Homework[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([teacherId])
+  @@index([inviteCode])
+}
+
+model Enrollment {
+  id            String @id @default(cuid())
+  classId       String
+  studentUserId String
+
+  class   Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  student User  @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, studentUserId])
+  @@index([studentUserId])
+}
+
+model GuardianLink {
+  id             String         @id @default(cuid())
+  /// Opcional até o encarregado aceitar o convite ou criar conta
+  parentUserId   String?
+  studentUserId  String
+  status         GuardianStatus @default(PENDING)
+  inviteToken    String?        @unique
+  createdByUserId String?
+  createdBy      User?          @relation("InviteCreator", fields: [createdByUserId], references: [id], onDelete: SetNull)
+
+  parent  User? @relation("ParentGuardian", fields: [parentUserId], references: [id], onDelete: Cascade)
+  student User  @relation("StudentGuardian", fields: [studentUserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([parentUserId, studentUserId])
+  @@index([inviteToken])
+  @@index([studentUserId])
+}
+
+model Subject {
+  id String @id @default(cuid())
+
+  name String
+
+  studentUserId String?
+  student       User?   @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+
+  classId String?
+  class   Class?  @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  marks       Mark[]
+  homeworks   Homework[]
+  difficulties Difficulty[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentUserId])
+  @@index([classId])
+}
+
+model Mark {
+  id            String   @id @default(cuid())
+  studentUserId String
+  subjectId     String
+  date          DateTime @db.Date
+  value         Float
+  maxValue      Float    @default(20)
+  weight        Float    @default(1)
+  type          MarkType @default(TESTE)
+  notes         String?
+
+  student User    @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentUserId, date])
+  @@index([subjectId])
+}
+
+model Homework {
+  id String @id @default(cuid())
+
+  studentUserId String
+  subjectId     String?
+
+  title   String
+  notes   String?
+  dueAt   DateTime
+  status  HomeworkStatus @default(PENDENTE)
+
+  assignedByUserId String?
+  assignedBy       User?   @relation("TeacherHomework", fields: [assignedByUserId], references: [id], onDelete: SetNull)
+
+  classId String?
+  class   Class?  @relation(fields: [classId], references: [id], onDelete: SetNull)
+
+  studyBlocks StudyBlock[]
+
+  student User     @relation("StudentHomework", fields: [studentUserId], references: [id], onDelete: Cascade)
+  subject Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentUserId, dueAt])
+  @@index([classId])
+}
+
+model StudyBlock {
+  id            String @id @default(cuid())
+  studentUserId String
+  title         String
+  startAt       DateTime
+  endAt         DateTime
+  homeworkId    String?
+
+  student  User      @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+  homework Homework? @relation(fields: [homeworkId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentUserId, startAt])
+}
+
+model Difficulty {
+  id            String @id @default(cuid())
+  studentUserId String
+  subjectId     String?
+
+  description        String
+  severity           DifficultySeverity @default(MEDIA)
+  shareWithParent    Boolean            @default(false)
+  shareWithTeacher   Boolean            @default(false)
+
+  student User     @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+  subject Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentUserId])
+}
