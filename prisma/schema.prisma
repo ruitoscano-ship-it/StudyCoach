@@ -50,6 +50,8 @@ model User {
   role          Role      @default(STUDENT)
   /// Ano escolar (1–9) para alunos
   gradeYear     Int?
+  /// Meta semanal de blocos de estudo (usado no dashboard do aluno)
+  studyWeeklyGoal Int @default(15)
 
   schoolId String?
   school     School? @relation(fields: [schoolId], references: [id])

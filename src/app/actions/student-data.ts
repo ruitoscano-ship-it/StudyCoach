@@ -9,6 +9,7 @@ import {
 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireStudent } from "@/lib/authz";
+import { addDays, startOfWeekMonday, toYmd } from "@/lib/dates";
 
 function rev() {
   revalidatePath("/aluno");
@@ -162,6 +163,125 @@ export async function listStudyBlocks(range?: { start: string; end: string }) {
     orderBy: { startAt: "asc" },
     take: 500,
   });
+}
+
+export async function getStudentHomeDashboard() {
+  const session = await requireStudent();
+  const now = new Date();
+  const startToday = new Date(now);
+  startToday.setHours(0, 0, 0, 0);
+  const endToday = addDays(startToday, 1);
+
+  const weekStart = startOfWeekMonday(now);
+  const weekEnd = addDays(weekStart, 7);
+
+  const monthAgo = addDays(startToday, -30);
+
+  // Use $queryRaw for profile fields so a stale Webpack-bundled Prisma Client
+  // (missing newer User columns) does not throw PrismaClientValidationError.
+  let profileRows: Array<{ name: string | null; studyWeeklyGoal: number }> = [];
+  let todayBlocks: Array<{
+    endAt: Date;
+    startAt: Date;
+    title: string;
+    homework: { subject: { name: string } | null } | null;
+  }> = [];
+  let nextBlock: {
+    endAt: Date;
+    startAt: Date;
+    title: string;
+    homework: { subject: { name: string } | null } | null;
+  } | null = null;
+  let todayHomework: Array<{
+    id: string;
+    title: string;
+    dueAt: Date;
+    status: HomeworkStatus;
+    subject: { name: string } | null;
+  }> = [];
+  let weekBlocks: Array<{ startAt: Date }> = [];
+  let recentBlocks: Array<{ startAt: Date }> = [];
+  let dbUnavailable = false;
+
+  try {
+    [profileRows, todayBlocks, nextBlock, todayHomework, weekBlocks, recentBlocks] =
+      await Promise.all([
+        prisma.$queryRaw<Array<{ name: string | null; studyWeeklyGoal: number }>>`
+          SELECT name, "studyWeeklyGoal" FROM "User" WHERE id = ${session.user.id} LIMIT 1
+        `,
+        prisma.studyBlock.findMany({
+          where: {
+            studentUserId: session.user.id,
+            AND: [{ startAt: { lt: endToday } }, { endAt: { gt: startToday } }],
+          },
+          include: { homework: { include: { subject: true } } },
+          orderBy: { startAt: "asc" },
+        }),
+        prisma.studyBlock.findFirst({
+          where: { studentUserId: session.user.id, endAt: { gt: now } },
+          include: { homework: { include: { subject: true } } },
+          orderBy: { startAt: "asc" },
+        }),
+        prisma.homework.findMany({
+          where: {
+            studentUserId: session.user.id,
+            dueAt: { gte: startToday, lt: endToday },
+          },
+          include: { subject: true },
+          orderBy: { dueAt: "asc" },
+        }),
+        prisma.studyBlock.findMany({
+          where: {
+            studentUserId: session.user.id,
+            AND: [{ startAt: { lt: weekEnd } }, { endAt: { gt: weekStart } }],
+          },
+          select: { startAt: true },
+          orderBy: { startAt: "asc" },
+        }),
+        prisma.studyBlock.findMany({
+          where: {
+            studentUserId: session.user.id,
+            startAt: { gte: monthAgo, lt: endToday },
+          },
+          select: { startAt: true },
+        }),
+      ]);
+  } catch {
+    dbUnavailable = true;
+  }
+
+  const doneToday = todayBlocks.filter((b) => b.endAt <= now).length;
+  const weekCounts = [0, 0, 0, 0, 0, 0, 0];
+  for (const block of weekBlocks) {
+    const idx = (block.startAt.getDay() + 6) % 7;
+    weekCounts[idx] += 1;
+  }
+
+  const activeDays = new Set(recentBlocks.map((b) => toYmd(b.startAt)));
+  let streakDays = 0;
+  for (let i = 0; i < 30; i += 1) {
+    const day = addDays(startToday, -i);
+    if (activeDays.has(toYmd(day))) {
+      streakDays += 1;
+    } else if (i > 0) {
+      break;
+    }
+  }
+
+  const student = profileRows[0] ?? null;
+
+  return {
+    studentName: student?.name ?? session.user.email ?? "Aluno",
+    todayBlocks,
+    doneToday,
+    nextBlock,
+    todayHomework,
+    weekCounts,
+    thisWeekTotal: weekBlocks.length,
+    weeklyGoal: Number(student?.studyWeeklyGoal ?? 15),
+    streakDays,
+    dbUnavailable,
+  };
 }
 
 export async function createStudyBlock(data: {

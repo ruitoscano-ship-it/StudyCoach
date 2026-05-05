@@ -15,6 +15,12 @@ const statusLabels: Record<string, string> = {
   CONCLUIDO: "Concluído",
 };
 
+const statusStyles: Record<string, string> = {
+  PENDENTE: "bg-amber-100 text-amber-900",
+  EM_CURSO: "bg-sky-100 text-sky-900",
+  CONCLUIDO: "bg-lime-100 text-lime-900",
+};
+
 export default async function TrabalhosPage({ searchParams }: Props) {
   const sp = await searchParams;
   const [subjects, homeworks] = await Promise.all([listSubjects(), listHomework()]);
@@ -27,20 +33,16 @@ export default async function TrabalhosPage({ searchParams }: Props) {
       </div>
       <ErrorBanner message={sp.error} />
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="duo-card">
         <h2 className="text-base font-semibold text-slate-900">Novo trabalho</h2>
         <form action={createHomeworkFormAction} className="mt-4 grid gap-3 sm:grid-cols-2">
           <label className="text-sm text-slate-700 sm:col-span-2">
             Título
-            <input
-              name="title"
-              required
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
+            <input name="title" required className="duo-input" />
           </label>
           <label className="text-sm text-slate-700">
             Disciplina (opcional)
-            <select name="subjectId" className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <select name="subjectId" className="duo-select">
               <option value="">—</option>
               {subjects.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -51,22 +53,14 @@ export default async function TrabalhosPage({ searchParams }: Props) {
           </label>
           <label className="text-sm text-slate-700">
             Entrega
-            <input
-              name="dueAt"
-              type="datetime-local"
-              required
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
+            <input name="dueAt" type="datetime-local" required className="duo-input" />
           </label>
           <label className="text-sm text-slate-700 sm:col-span-2">
             Observações (opcional)
-            <input name="notes" className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <input name="notes" className="duo-input" />
           </label>
           <div className="sm:col-span-2">
-            <button
-              type="submit"
-              className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
-            >
+            <button type="submit" className="duo-btn">
               Adicionar
             </button>
           </div>
@@ -82,7 +76,7 @@ export default async function TrabalhosPage({ searchParams }: Props) {
             {homeworks.map((h) => (
               <li
                 key={h.id}
-                className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                className="duo-card flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div>
                   <p className="font-medium text-slate-900">{h.title}</p>
@@ -93,7 +87,11 @@ export default async function TrabalhosPage({ searchParams }: Props) {
                       timeStyle: "short",
                     })}
                   </p>
-                  <p className="text-xs text-slate-500">{statusLabels[h.status] ?? h.status}</p>
+                  <p
+                    className={`duo-badge mt-2 ${statusStyles[h.status] ?? "bg-slate-100 text-slate-700"}`}
+                  >
+                    {statusLabels[h.status] ?? h.status}
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <form
@@ -104,19 +102,19 @@ export default async function TrabalhosPage({ searchParams }: Props) {
                     <select
                       name="status"
                       defaultValue={h.status}
-                      className="rounded border border-slate-300 px-2 py-1 text-sm"
+                      className="duo-select mt-0 min-w-[140px] py-1"
                     >
                       <option value="PENDENTE">Pendente</option>
                       <option value="EM_CURSO">Em curso</option>
                       <option value="CONCLUIDO">Concluído</option>
                     </select>
-                    <button type="submit" className="text-sm text-teal-700 hover:underline">
+                    <button type="submit" className="duo-btn-soft px-3 py-1.5 text-sm text-teal-700">
                       Guardar
                     </button>
                   </form>
                   <form action={deleteHomeworkFormAction}>
                     <input type="hidden" name="id" value={h.id} />
-                    <button type="submit" className="text-sm text-red-600 hover:underline">
+                    <button type="submit" className="duo-btn-soft px-3 py-1.5 text-sm text-red-600">
                       Apagar
                     </button>
                   </form>

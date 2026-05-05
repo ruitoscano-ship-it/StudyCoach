@@ -19,9 +19,9 @@ export default async function DificuldadesPage({ searchParams }: Props) {
   const [subjects, difficulties] = await Promise.all([listSubjects(), listDifficulties()]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Dificuldades</h1>
+        <h1 className="duo-page-title">Dificuldades</h1>
         <p className="mt-1 text-sm text-slate-600">
           Regista o que te custa mais. Podes partilhar com o encarregado de educação ou com o
           professor (da turma).
@@ -29,21 +29,16 @@ export default async function DificuldadesPage({ searchParams }: Props) {
       </div>
       <ErrorBanner message={sp.error} />
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="duo-card">
         <h2 className="text-base font-semibold text-slate-900">Novo registo</h2>
         <form action={createDifficultyFormAction} className="mt-4 space-y-4">
           <label className="block text-sm text-slate-700">
             Descrição
-            <textarea
-              name="description"
-              required
-              rows={3}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            />
+            <textarea name="description" required rows={3} className="duo-textarea" />
           </label>
           <label className="block text-sm text-slate-700">
             Disciplina (opcional)
-            <select name="subjectId" className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <select name="subjectId" className="duo-select">
               <option value="">—</option>
               {subjects.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -54,7 +49,7 @@ export default async function DificuldadesPage({ searchParams }: Props) {
           </label>
           <label className="block text-sm text-slate-700">
             Gravidade
-            <select name="severity" className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm">
+            <select name="severity" className="duo-select">
               <option value="BAIXA">Baixa</option>
               <option value="MEDIA">Média</option>
               <option value="ALTA">Alta</option>
@@ -70,10 +65,7 @@ export default async function DificuldadesPage({ searchParams }: Props) {
               Partilhar com professor (turma)
             </label>
           </div>
-          <button
-            type="submit"
-            className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
-          >
+          <button type="submit" className="duo-btn">
             Guardar
           </button>
         </form>
@@ -86,7 +78,7 @@ export default async function DificuldadesPage({ searchParams }: Props) {
         ) : (
           <ul className="mt-3 space-y-3">
             {difficulties.map((d) => (
-              <li key={d.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+              <li key={d.id} className="duo-card rounded-2xl p-4">
                 <p className="text-slate-900">{d.description}</p>
                 <p className="mt-1 text-sm text-slate-600">
                   {d.subject?.name ?? "Sem disciplina"} · {sev[d.severity] ?? d.severity}
@@ -98,7 +90,7 @@ export default async function DificuldadesPage({ searchParams }: Props) {
                 </p>
                 <form action={deleteDifficultyFormAction} className="mt-2">
                   <input type="hidden" name="id" value={d.id} />
-                  <button type="submit" className="text-sm text-red-600 hover:underline">
+                  <button type="submit" className="duo-btn-soft px-3 py-1.5 text-sm text-red-600">
                     Apagar
                   </button>
                 </form>

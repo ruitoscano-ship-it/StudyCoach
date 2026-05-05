@@ -5,6 +5,7 @@ import { z } from "zod";
 import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/password";
+import { getAppBaseUrl } from "@/lib/url";
 
 const baseSchema = z.object({
   name: z.string().min(2).max(120),
@@ -122,8 +123,7 @@ export async function createGuardianInviteAction(): Promise<
     },
   });
 
-  const base =
-    process.env.NEXTAUTH_URL ?? process.env.AUTH_URL ?? "http://localhost:3000";
+  const base = await getAppBaseUrl();
   const url = `${base.replace(/\/$/, "")}/convite?token=${token}`;
 
   return { ok: true, url, token };

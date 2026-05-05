@@ -1,18 +1,52 @@
 import Link from "next/link";
+import { auth } from "@/auth";
 import { SignOutButton } from "@/components/sign-out-button";
 
-export default function EncarregadoLayout({ children }: { children: React.ReactNode }) {
+const links = [{ href: "/encarregado", label: "Início" }];
+
+export default async function EncarregadoLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  const firstName = session?.user?.name?.split(" ")[0] ?? "Encarregado";
+
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 px-4 py-3">
-          <Link href="/encarregado" className="font-semibold text-teal-800">
+    <div className="min-h-screen bg-[#f8f6f2]">
+      <div className="mx-auto flex w-full max-w-[1200px] gap-3 px-3 py-3">
+        <aside className="duo-card hidden w-[238px] shrink-0 p-3 lg:flex lg:flex-col">
+          <div className="mb-4 flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-violet-600 text-sm font-bold text-white">
+              E
+            </span>
+            <p className="font-semibold text-slate-900">Study Coach</p>
+          </div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-violet-900">
             Área do encarregado
-          </Link>
-          <SignOutButton />
+          </p>
+          <nav className="space-y-1 text-sm">
+            {links.map((l) => (
+              <Link key={l.href} href={l.href} className="app-nav-link">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="mt-auto rounded-2xl border border-[#e7e1d8] bg-white p-3">
+            <p className="text-sm font-semibold text-slate-900">{firstName}</p>
+            <p className="text-xs text-slate-500">Encarregado</p>
+            <div className="mt-3">
+              <SignOutButton />
+            </div>
+          </div>
+        </aside>
+
+        <div className="min-w-0 flex-1">
+          <header className="duo-card mb-4 flex items-center justify-between p-3 lg:hidden">
+            <span className="rounded-full bg-violet-100 px-3 py-1 text-sm font-semibold text-violet-900">
+              Área do encarregado
+            </span>
+            <SignOutButton />
+          </header>
+          <main>{children}</main>
         </div>
-      </header>
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">{children}</main>
+      </div>
     </div>
   );
 }

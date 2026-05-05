@@ -86,6 +86,18 @@ export async function getClassDetail(classId: string) {
           },
         },
       },
+      homeworks: {
+        where: { classId },
+        select: {
+          id: true,
+          title: true,
+          dueAt: true,
+          status: true,
+          studentUserId: true,
+          subject: { select: { name: true } },
+        },
+        orderBy: { dueAt: "desc" },
+      },
       school: true,
     },
   });
@@ -171,6 +183,85 @@ export async function listClassDifficulties(classId: string) {
   });
 }
 
+export async function createStudyProgramAndScheduleForStudent(
+  classId: string,
+  data: {
+    studentUserId: string;
+    title: string;
+    startAt: string;
+    endAt: string;
+    notes?: string;
+    subjectName?: string;
+  },
+) {
+  const session = await requireTeacher();
+  const { assertTeacherOwnsClass } = await import("@/lib/authz");
+  await assertTeacherOwnsClass(classId);
+
+  const cls = await prisma.class.findUnique({
+    where: { id: classId },
+    include: { enrollments: true },
+  });
+  if (!cls) throw new Error("Turma não encontrada.");
+
+  const studentId = data.studentUserId.trim();
+  if (!studentId) throw new Error("Seleciona um aluno.");
+  const enrolled = cls.enrollments.some((e) => e.studentUserId === studentId);
+  if (!enrolled) throw new Error("O aluno selecionado não pertence a esta turma.");
+
+  const title = data.title.trim();
+  if (!title) throw new Error("Indica o título do programa.");
+
+  const startAt = new Date(data.startAt);
+  const endAt = new Date(data.endAt);
+  if (Number.isNaN(startAt.getTime()) || Number.isNaN(endAt.getTime())) {
+    throw new Error("Datas inválidas.");
+  }
+  if (endAt <= startAt) throw new Error("A hora de fim deve ser depois do início.");
+
+  let subjectId: string | null = null;
+  if (data.subjectName?.trim()) {
+    const created = await prisma.subject.create({
+      data: {
+        name: data.subjectName.trim(),
+        classId: cls.id,
+      },
+    });
+    subjectId = created.id;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const hw = await tx.homework.create({
+      data: {
+        studentUserId: studentId,
+        classId: cls.id,
+        assignedByUserId: session.user.id,
+        title,
+        notes: data.notes?.trim() || null,
+        subjectId,
+        dueAt: endAt,
+        status: "PENDENTE",
+      },
+    });
+
+    await tx.studyBlock.create({
+      data: {
+        studentUserId: studentId,
+        title: `Sessão: ${title}`,
+        startAt,
+        endAt,
+        homeworkId: hw.id,
+      },
+    });
+  });
+
+  revalidatePath("/professor");
+  revalidatePath(`/professor/turma/${classId}`);
+  revalidatePath("/aluno");
+  revalidatePath("/aluno/plano");
+  revalidatePath("/aluno/trabalhos");
+}
+
 export async function joinClassFormAction(formData: FormData) {
   try {
     await joinClassByCode(String(formData.get("code") ?? ""));
@@ -205,6 +296,25 @@ export async function assignHomeworkFormAction(formData: FormData) {
       dueAt: String(formData.get("dueAt") ?? ""),
       subjectName: String(formData.get("subjectName") ?? "") || undefined,
       notes: String(formData.get("notes") ?? "") || undefined,
+    });
+  } catch (e) {
+    redirect(
+      `/professor/turma/${classId}?error=${encodeURIComponent(e instanceof Error ? e.message : "Erro")}`,
+    );
+  }
+  redirect(`/professor/turma/${classId}`);
+}
+
+export async function createStudyProgramFormAction(formData: FormData) {
+  const classId = String(formData.get("classId") ?? "");
+  try {
+    await createStudyProgramAndScheduleForStudent(classId, {
+      studentUserId: String(formData.get("studentUserId") ?? ""),
+      title: String(formData.get("title") ?? ""),
+      startAt: String(formData.get("startAt") ?? ""),
+      endAt: String(formData.get("endAt") ?? ""),
+      notes: String(formData.get("notes") ?? "") || undefined,
+      subjectName: String(formData.get("subjectName") ?? "") || undefined,
     });
   } catch (e) {
     redirect(

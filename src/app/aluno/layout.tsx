@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { auth } from "@/auth";
 import { SignOutButton } from "@/components/sign-out-button";
 
 const links = [
@@ -10,27 +11,45 @@ const links = [
   { href: "/aluno/turma", label: "Turma" },
 ];
 
-export default function AlunoLayout({ children }: { children: React.ReactNode }) {
+export default async function AlunoLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  const firstName = session?.user?.name?.split(" ")[0] ?? "Aluno";
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="border-b border-sky-200/70 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-2 px-4 py-3">
-          <span className="font-semibold text-sky-900">Area do aluno</span>
-          <nav className="flex flex-wrap gap-1 text-sm">
+    <div className="min-h-screen bg-[#f8f6f2]">
+      <div className="mx-auto flex w-full max-w-[1200px] gap-3 px-3 py-3">
+        <aside className="duo-card hidden w-[238px] shrink-0 p-3 lg:flex lg:flex-col">
+          <div className="mb-4 flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ff6b4a] text-sm font-bold text-white">
+              S
+            </span>
+            <p className="font-semibold text-slate-900">Study Coach</p>
+          </div>
+          <nav className="space-y-1 text-sm">
             {links.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="rounded-md px-2 py-1.5 text-slate-700 hover:bg-sky-100"
-              >
+              <Link key={l.href} href={l.href} className="app-nav-link">
                 {l.label}
               </Link>
             ))}
-            <SignOutButton />
           </nav>
+          <div className="mt-auto rounded-2xl border border-[#e7e1d8] bg-white p-3">
+            <p className="text-sm font-semibold text-slate-900">{firstName}</p>
+            <p className="text-xs text-slate-500">Área de estudante</p>
+            <div className="mt-3">
+              <SignOutButton />
+            </div>
+          </div>
+        </aside>
+
+        <div className="min-w-0 flex-1">
+          <header className="duo-card mb-4 flex items-center justify-between p-3 lg:hidden">
+            <span className="rounded-full bg-orange-100 px-3 py-1 text-sm font-semibold text-orange-900">
+              Área do aluno
+            </span>
+            <SignOutButton />
+          </header>
+          <main>{children}</main>
         </div>
-      </header>
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8">{children}</main>
+      </div>
     </div>
   );
 }

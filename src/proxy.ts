@@ -9,7 +9,7 @@ const publicPaths = new Set([
   "/convite",
 ]);
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isPublic =
     publicPaths.has(pathname) ||

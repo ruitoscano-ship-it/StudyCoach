@@ -28,28 +28,25 @@ export default async function NotasPage({ searchParams }: Props) {
   });
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Notas</h1>
+        <h1 className="duo-page-title">Notas</h1>
         <p className="mt-1 text-sm text-slate-600">
           Disciplinas e médias (ponderação por peso). Escala por defeito 0–20.
         </p>
       </div>
       <ErrorBanner message={sp.error} />
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="duo-card">
         <h2 className="text-base font-semibold text-slate-900">Nova disciplina</h2>
         <form action={createSubjectFormAction} className="mt-3 flex flex-wrap gap-2">
           <input
             name="name"
             placeholder="Ex.: Matemática"
             required
-            className="min-w-[200px] flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="duo-input mt-0 min-w-[200px] flex-1"
           />
-          <button
-            type="submit"
-            className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
-          >
+          <button type="submit" className="duo-btn">
             Adicionar
           </button>
         </form>
@@ -58,11 +55,11 @@ export default async function NotasPage({ searchParams }: Props) {
       {subjects.length === 0 ? (
         <p className="text-sm text-slate-500">Adiciona uma disciplina para começar a registar notas.</p>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {bySubject.map(({ subject, marks: ms, avg }) => (
             <section
               key={subject.id}
-              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+              className="duo-card"
             >
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
@@ -78,7 +75,7 @@ export default async function NotasPage({ searchParams }: Props) {
                 </div>
                 <form action={deleteSubjectFormAction}>
                   <input type="hidden" name="id" value={subject.id} />
-                  <button type="submit" className="text-xs text-red-600 hover:underline">
+                  <button type="submit" className="duo-btn-soft px-3 py-1 text-xs text-red-600">
                     Remover disciplina
                   </button>
                 </form>
@@ -95,7 +92,7 @@ export default async function NotasPage({ searchParams }: Props) {
                     </span>
                     <form action={deleteMarkFormAction}>
                       <input type="hidden" name="id" value={m.id} />
-                      <button type="submit" className="text-xs text-red-600 hover:underline">
+                      <button type="submit" className="duo-btn-soft px-3 py-1 text-xs text-red-600">
                         Apagar
                       </button>
                     </form>
@@ -111,7 +108,7 @@ export default async function NotasPage({ searchParams }: Props) {
                     name="date"
                     type="date"
                     required
-                    className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+                    className="duo-input py-1.5"
                   />
                 </label>
                 <label className="text-xs text-slate-600">
@@ -121,7 +118,7 @@ export default async function NotasPage({ searchParams }: Props) {
                     type="number"
                     step="0.01"
                     required
-                    className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+                    className="duo-input py-1.5"
                   />
                 </label>
                 <label className="text-xs text-slate-600">
@@ -131,14 +128,14 @@ export default async function NotasPage({ searchParams }: Props) {
                     type="number"
                     step="0.01"
                     placeholder="20"
-                    className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+                    className="duo-input py-1.5"
                   />
                 </label>
                 <label className="text-xs text-slate-600">
                   Tipo
                   <select
                     name="type"
-                    className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm"
+                    className="duo-select py-1.5"
                   >
                     <option value="TESTE">Teste</option>
                     <option value="TRABALHO">Trabalho</option>
@@ -149,13 +146,10 @@ export default async function NotasPage({ searchParams }: Props) {
                 </label>
                 <label className="col-span-full text-xs text-slate-600 sm:col-span-2">
                   Observações (opcional)
-                  <input name="notes" className="mt-1 w-full rounded border border-slate-300 px-2 py-1.5 text-sm" />
+                  <input name="notes" className="duo-input py-1.5" />
                 </label>
                 <div className="col-span-full sm:col-span-2">
-                  <button
-                    type="submit"
-                    className="rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-900"
-                  >
+                  <button type="submit" className="duo-btn">
                     Registar nota
                   </button>
                 </div>

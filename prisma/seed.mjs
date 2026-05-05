@@ -53,6 +53,7 @@ async function main() {
         name: "Tiago Santos",
         role: "STUDENT",
         gradeYear: 5,
+        studyWeeklyGoal: 18,
         passwordHash,
       },
       create: {
@@ -60,6 +61,7 @@ async function main() {
         email: "aluno.demo@studycoach.test",
         role: "STUDENT",
         gradeYear: 5,
+        studyWeeklyGoal: 18,
         passwordHash,
       },
     }),
@@ -69,6 +71,7 @@ async function main() {
         name: "Ines Costa",
         role: "STUDENT",
         gradeYear: 5,
+        studyWeeklyGoal: 15,
         passwordHash,
       },
       create: {
@@ -76,6 +79,7 @@ async function main() {
         email: "aluna.demo@studycoach.test",
         role: "STUDENT",
         gradeYear: 5,
+        studyWeeklyGoal: 15,
         passwordHash,
       },
     }),

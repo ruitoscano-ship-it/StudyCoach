@@ -23,11 +23,11 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3001"
     environment:
       DATABASE_URL: postgresql://postgres:postgres@postgres:5432/study_coach
       AUTH_SECRET: ${AUTH_SECRET:-change-me-generate-with-openssl-rand-base64-32}
-      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3000}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3001}
     depends_on:
       postgres:
         condition: service_healthy

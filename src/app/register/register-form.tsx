@@ -14,10 +14,10 @@ export function RegisterForm() {
 
   if (state.ok) {
     return (
-      <div className="rounded-lg bg-teal-50 px-4 py-3 text-sm text-teal-900">
-        <p className="font-medium">Conta criada com sucesso.</p>
+      <div className="rounded-2xl border border-lime-200 bg-lime-50 px-4 py-3 text-sm text-lime-950">
+        <p className="font-semibold">Conta criada com sucesso.</p>
         <p className="mt-1">
-          <Link href="/login" className="font-semibold underline">
+          <Link href="/login" className="font-semibold text-[#ff6b4a] underline">
             Entra aqui
           </Link>{" "}
           para continuar.
@@ -29,7 +29,7 @@ export function RegisterForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       {state.error ? (
-        <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+        <p className="rounded-2xl border border-[#f3d8cf] bg-[#fff4ef] px-3 py-2 text-sm text-orange-950" role="alert">
           {state.error}
         </p>
       ) : null}
@@ -43,7 +43,7 @@ export function RegisterForm() {
           name="name"
           required
           minLength={2}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base outline-none focus:ring-2 focus:ring-teal-500"
+          className="duo-input mt-0 py-2.5 text-base"
         />
       </div>
       <div>
@@ -56,7 +56,7 @@ export function RegisterForm() {
           type="email"
           required
           autoComplete="email"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base outline-none focus:ring-2 focus:ring-teal-500"
+          className="duo-input mt-0 py-2.5 text-base"
         />
       </div>
       <div>
@@ -70,21 +70,21 @@ export function RegisterForm() {
           required
           minLength={8}
           autoComplete="new-password"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base outline-none focus:ring-2 focus:ring-teal-500"
+          className="duo-input mt-0 py-2.5 text-base"
         />
       </div>
       <div>
         <span className="mb-1 block text-sm font-medium text-slate-700">Tipo de conta</span>
         <div className="flex flex-col gap-2">
-          <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
+          <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-[#e7e1d8] bg-white p-3 hover:bg-[#faf7f3]">
             <input type="radio" name="role" value="STUDENT" defaultChecked className="h-4 w-4" />
             <span>Aluno</span>
           </label>
-          <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
+          <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-[#e7e1d8] bg-white p-3 hover:bg-[#faf7f3]">
             <input type="radio" name="role" value="PARENT" className="h-4 w-4" />
             <span>Encarregado de educação</span>
           </label>
-          <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
+          <label className="flex cursor-pointer items-center gap-2 rounded-2xl border border-[#e7e1d8] bg-white p-3 hover:bg-[#faf7f3]">
             <input type="radio" name="role" value="TEACHER" className="h-4 w-4" />
             <span>Professor</span>
           </label>
@@ -97,7 +97,7 @@ export function RegisterForm() {
         <select
           id="gradeYear"
           name="gradeYear"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base outline-none focus:ring-2 focus:ring-teal-500"
+          className="duo-select mt-0 py-2.5 text-base"
           defaultValue=""
         >
           <option value="">—</option>
@@ -111,7 +111,7 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded-lg bg-teal-600 py-3 text-base font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
+        className="duo-btn mt-2 py-3 text-base disabled:opacity-60"
       >
         {pending ? "A criar…" : "Criar conta"}
       </button>

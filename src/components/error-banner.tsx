@@ -2,7 +2,7 @@ export function ErrorBanner({ message }: { message?: string }) {
   if (!message) return null;
   return (
     <p
-      className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+      className="mb-4 rounded-2xl border border-[#f3d8cf] bg-[#fff4ef] px-4 py-3 text-sm font-medium text-orange-950"
       role="alert"
     >
       {message}

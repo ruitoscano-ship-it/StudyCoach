@@ -1,8 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4fbff;
-  --foreground: #10243e;
+  --background: #f8f6f2;
+  --foreground: #1e293b;
+  --app-canvas: #f8f6f2;
+  --app-card: #fffdfa;
+  --app-border: #e9e2d9;
+  --app-accent: #ff6b4a;
 }
 
 @theme inline {
@@ -12,18 +16,64 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background:
-    radial-gradient(circle at 10% 10%, #d8f5ff 0%, transparent 35%),
-    radial-gradient(circle at 90% 0%, #e7e0ff 0%, transparent 30%),
-    var(--background);
+  background-color: var(--app-canvas);
+  background-image:
+    radial-gradient(circle at 12% 0%, rgba(255, 107, 74, 0.06) 0%, transparent 42%),
+    radial-gradient(circle at 88% 8%, rgba(14, 165, 164, 0.05) 0%, transparent 38%);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: #ff6b4a;
+  color: #ffffff;
+}
+
+.app-shell {
+  @apply mx-auto w-full max-w-5xl px-4;
+}
+
+.app-header {
+  @apply sticky top-0 z-30 border-b border-white/70 bg-white/75 backdrop-blur-xl;
+}
+
+.app-panel {
+  @apply rounded-3xl border border-slate-200/70 bg-white/85 shadow-[0_10px_35px_-18px_rgba(15,23,42,0.45)];
+}
+
+.app-nav-link {
+  @apply block w-full rounded-2xl px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-white hover:text-slate-900;
+}
+
+.duo-page-title {
+  @apply font-serif text-3xl font-semibold tracking-tight text-[#2b2b2b];
+}
+
+.duo-card {
+  @apply rounded-[22px] border border-[#e9e2d9] bg-[#fffdfa] p-5 shadow-[0_10px_24px_-18px_rgba(30,41,59,0.45)];
+}
+
+.duo-input {
+  @apply mt-1 w-full rounded-2xl border border-[#e7e1d8] bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/80;
+}
+
+.duo-select {
+  @apply mt-1 w-full rounded-2xl border border-[#e7e1d8] bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/80;
+}
+
+.duo-textarea {
+  @apply mt-1 w-full rounded-2xl border border-[#e7e1d8] bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200/80;
+}
+
+.duo-btn {
+  @apply rounded-2xl bg-[#ff6b4a] px-4 py-2 text-sm font-semibold text-white shadow-[inset_0_-2px_0_rgba(0,0,0,0.15)] transition hover:bg-[#f25d3d] active:translate-y-[1px];
+}
+
+.duo-btn-soft {
+  @apply rounded-2xl border border-[#e7e1d8] bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-[#faf7f3];
+}
+
+.duo-badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
 }

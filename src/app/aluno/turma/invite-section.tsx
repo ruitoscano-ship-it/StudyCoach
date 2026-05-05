@@ -24,18 +24,18 @@ export function InviteSection({ initialUrl }: { initialUrl: string | null }) {
   return (
     <div className="mt-4 space-y-3">
       {err ? (
-        <p className="text-sm text-red-700" role="alert">
+        <p className="rounded-2xl border border-[#f3d8cf] bg-[#fff4ef] px-3 py-2 text-sm text-orange-950" role="alert">
           {err}
         </p>
       ) : null}
       {url ? (
-        <div className="rounded-lg bg-slate-50 p-3">
+        <div className="rounded-2xl border border-[#e7e1d8] bg-[#faf7f3] p-3">
           <p className="text-xs font-medium text-slate-600">Link do convite</p>
           <p className="mt-1 break-all text-sm text-slate-900">{url}</p>
           <button
             type="button"
             onClick={() => void navigator.clipboard.writeText(url)}
-            className="mt-2 text-sm font-medium text-teal-700 hover:underline"
+            className="mt-2 text-sm font-semibold text-[#ff6b4a] hover:underline"
           >
             Copiar
           </button>
@@ -47,7 +47,7 @@ export function InviteSection({ initialUrl }: { initialUrl: string | null }) {
         type="button"
         disabled={pending}
         onClick={() => void generate()}
-        className="rounded-lg border border-teal-600 bg-white px-4 py-2 text-sm font-medium text-teal-800 hover:bg-teal-50 disabled:opacity-60"
+        className="duo-btn-soft border-teal-300 text-teal-900 hover:bg-teal-50 disabled:opacity-60"
       >
         {pending ? "A gerar…" : "Gerar novo convite"}
       </button>

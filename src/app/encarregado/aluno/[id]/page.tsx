@@ -14,12 +14,12 @@ export default async function EncarregadoAlunoPage({ params }: Props) {
   }
 
   return (
-    <div className="space-y-8">
-      <Link href="/encarregado" className="text-sm text-teal-700 hover:underline">
+    <div className="space-y-4">
+      <Link href="/encarregado" className="duo-btn-soft inline-flex w-fit px-3 py-1.5 text-sm text-slate-700">
         ← Voltar
       </Link>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="duo-card">
         <h2 className="text-lg font-semibold text-slate-900">Notas (recentes)</h2>
         {data.marks.length === 0 ? (
           <p className="mt-2 text-sm text-slate-500">Sem notas registadas.</p>
@@ -39,7 +39,7 @@ export default async function EncarregadoAlunoPage({ params }: Props) {
         )}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="duo-card">
         <h2 className="text-lg font-semibold text-slate-900">Trabalhos</h2>
         {data.homework.length === 0 ? (
           <p className="mt-2 text-sm text-slate-500">Sem trabalhos.</p>
@@ -60,7 +60,7 @@ export default async function EncarregadoAlunoPage({ params }: Props) {
         )}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="duo-card">
         <h2 className="text-lg font-semibold text-slate-900">Dificuldades partilhadas</h2>
         {data.difficulties.length === 0 ? (
           <p className="mt-2 text-sm text-slate-500">
@@ -80,7 +80,7 @@ export default async function EncarregadoAlunoPage({ params }: Props) {
         )}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="duo-card">
         <h2 className="text-lg font-semibold text-slate-900">Plano (blocos recentes)</h2>
         {data.studyBlocks.length === 0 ? (
           <p className="mt-2 text-sm text-slate-500">Sem blocos.</p>

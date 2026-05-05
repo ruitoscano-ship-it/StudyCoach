@@ -6,9 +6,9 @@ import { useState } from "react";
 
 const DEMO_PASSWORD = "Pass1234!";
 const DEMO_USERS = [
-  { label: "Aluno", email: "aluno.demo@studycoach.test" },
-  { label: "Encarregado", email: "enc.demo@studycoach.test" },
-  { label: "Professor", email: "prof.demo@studycoach.test" },
+  { label: "Student", email: "aluno.demo@studycoach.test" },
+  { label: "Parent", email: "enc.demo@studycoach.test" },
+  { label: "Teacher", email: "prof.demo@studycoach.test" },
 ];
 
 export function LoginForm() {
@@ -58,7 +58,7 @@ export function LoginForm() {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base outline-none ring-teal-500 focus:border-teal-500 focus:ring-2"
+          className="duo-input mt-0 py-2.5 text-base"
         />
       </div>
       <div>
@@ -73,17 +73,17 @@ export function LoginForm() {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-base outline-none ring-teal-500 focus:border-teal-500 focus:ring-2"
+          className="duo-input mt-0 py-2.5 text-base"
         />
       </div>
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded-lg bg-teal-600 py-3 text-base font-semibold text-white hover:bg-teal-700 disabled:opacity-60"
+        className="duo-btn mt-2 py-3 text-base disabled:opacity-60"
       >
         {pending ? "A entrar…" : "Entrar"}
       </button>
-      <div className="rounded-xl border border-sky-200 bg-sky-50 p-3">
+      <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3">
         <p className="text-sm font-semibold text-sky-900">Contas de teste</p>
         <p className="mt-1 text-xs text-sky-800">Palavra-passe para todas: {DEMO_PASSWORD}</p>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -96,7 +96,7 @@ export function LoginForm() {
                 setPassword(DEMO_PASSWORD);
                 setError(null);
               }}
-              className="rounded-lg border border-sky-300 bg-white px-3 py-1.5 text-xs font-medium text-sky-900 hover:bg-sky-100"
+              className="rounded-xl border border-sky-300 bg-white px-3 py-1.5 text-xs font-semibold text-sky-900 hover:bg-sky-100"
             >
               {user.label}
             </button>

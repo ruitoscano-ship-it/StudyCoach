@@ -2,6 +2,7 @@ import { ErrorBanner } from "@/components/error-banner";
 import { joinClassFormAction } from "@/app/actions/class";
 import { requireStudent } from "@/lib/authz";
 import { prisma } from "@/lib/prisma";
+import { getAppBaseUrl } from "@/lib/url";
 import { InviteSection } from "./invite-section";
 
 type Props = { searchParams: Promise<{ error?: string }> };
@@ -23,17 +24,16 @@ export default async function TurmaPage({ searchParams }: Props) {
     orderBy: { createdAt: "desc" },
   });
 
-  const base =
-    process.env.NEXTAUTH_URL ?? process.env.AUTH_URL ?? "http://localhost:3000";
+  const base = await getAppBaseUrl();
   const initialUrl =
     pending?.inviteToken != null
       ? `${base.replace(/\/$/, "")}/convite?token=${pending.inviteToken}`
       : null;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Turma e família</h1>
+        <h1 className="duo-page-title">Turma e família</h1>
         <p className="mt-1 text-sm text-slate-600">
           Junta-te a uma turma com o código do professor. Convida o teu encarregado de educação com
           um link.
@@ -41,7 +41,7 @@ export default async function TurmaPage({ searchParams }: Props) {
       </div>
       <ErrorBanner message={sp.error} />
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="duo-card">
         <h2 className="text-base font-semibold text-slate-900">Entrar na turma</h2>
         <p className="mt-1 text-sm text-slate-600">
           Pede o código ao professor e cola aqui.
@@ -51,18 +51,15 @@ export default async function TurmaPage({ searchParams }: Props) {
             name="code"
             placeholder="Código da turma"
             required
-            className="min-w-[200px] flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            className="duo-input mt-0 min-w-[200px] flex-1"
           />
-          <button
-            type="submit"
-            className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700"
-          >
+          <button type="submit" className="duo-btn">
             Entrar
           </button>
         </form>
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="duo-card">
         <h2 className="text-base font-semibold text-slate-900">As minhas turmas</h2>
         {enrollments.length === 0 ? (
           <p className="mt-2 text-sm text-slate-500">Ainda não estás inscrito em nenhuma turma.</p>
@@ -77,7 +74,7 @@ export default async function TurmaPage({ searchParams }: Props) {
         )}
       </section>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <section className="duo-card">
         <h2 className="text-base font-semibold text-slate-900">Convidar encarregado de educação</h2>
         <p className="mt-2 text-sm text-slate-600">
           Gera um link e envia à pessoa responsável. Ela regista-se como encarregado e aceita o
