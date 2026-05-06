@@ -77,3 +77,94 @@ body {
 .duo-badge {
   @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
 }
+
+:root {
+  --vt-duration-exit: 170ms;
+  --vt-duration-enter: 240ms;
+}
+
+::view-transition-old(.route-exit) {
+  animation:
+    var(--vt-duration-exit) ease-in both vt-fade reverse,
+    320ms ease-in-out both vt-slide-up reverse;
+}
+
+::view-transition-new(.route-enter) {
+  animation:
+    var(--vt-duration-enter) ease-out 80ms both vt-fade,
+    380ms ease-out both vt-slide-up;
+}
+
+::view-transition-old(.route-fade) {
+  animation: var(--vt-duration-exit) ease-in both vt-fade reverse;
+}
+
+::view-transition-new(.route-fade) {
+  animation: var(--vt-duration-enter) ease-out both vt-fade;
+}
+
+::view-transition-old(.nav-forward) {
+  --vt-slide-x: -56px;
+  animation:
+    var(--vt-duration-exit) ease-in both vt-fade reverse,
+    380ms ease-in-out both vt-slide-x reverse;
+}
+
+::view-transition-new(.nav-forward) {
+  --vt-slide-x: 56px;
+  animation:
+    var(--vt-duration-enter) ease-out 80ms both vt-fade,
+    380ms ease-in-out both vt-slide-x;
+}
+
+::view-transition-old(.nav-back) {
+  --vt-slide-x: 56px;
+  animation:
+    var(--vt-duration-exit) ease-in both vt-fade reverse,
+    380ms ease-in-out both vt-slide-x reverse;
+}
+
+::view-transition-new(.nav-back) {
+  --vt-slide-x: -56px;
+  animation:
+    var(--vt-duration-enter) ease-out 80ms both vt-fade,
+    380ms ease-in-out both vt-slide-x;
+}
+
+@keyframes vt-fade {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+@keyframes vt-slide-up {
+  from {
+    transform: translateY(12px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes vt-slide-x {
+  from {
+    transform: translateX(var(--vt-slide-x));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

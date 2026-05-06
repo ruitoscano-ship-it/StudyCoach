@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ViewTransition } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthSessionProvider } from "@/components/session-provider";
@@ -41,7 +42,23 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col text-slate-900">
-        <AuthSessionProvider>{children}</AuthSessionProvider>
+        <AuthSessionProvider>
+          <ViewTransition
+            enter={{
+              "nav-forward": "nav-forward",
+              "nav-back": "nav-back",
+              default: "route-enter",
+            }}
+            exit={{
+              "nav-forward": "nav-forward",
+              "nav-back": "nav-back",
+              default: "route-exit",
+            }}
+            default="route-fade"
+          >
+            {children}
+          </ViewTransition>
+        </AuthSessionProvider>
       </body>
     </html>
   );
