@@ -15,7 +15,6 @@ const DEMO_USERS = [
 export function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = sanitizeCallbackPath(searchParams.get("callbackUrl"));
-  const showDemoAccounts = process.env.NEXT_PUBLIC_ENABLE_DEMO_ACCOUNTS === "true";
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [email, setEmail] = useState("");
@@ -85,28 +84,26 @@ export function LoginForm() {
       >
         {pending ? "A entrar…" : "Entrar"}
       </button>
-      {showDemoAccounts ? (
-        <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3">
-          <p className="text-sm font-semibold text-sky-900">Contas de teste</p>
-          <p className="mt-1 text-xs text-sky-800">Palavra-passe para todas: {DEMO_PASSWORD}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {DEMO_USERS.map((user) => (
-              <button
-                key={user.email}
-                type="button"
-                onClick={() => {
-                  setEmail(user.email);
-                  setPassword(DEMO_PASSWORD);
-                  setError(null);
-                }}
-                className="rounded-xl border border-sky-300 bg-white px-3 py-1.5 text-xs font-semibold text-sky-900 hover:bg-sky-100"
-              >
-                {user.label}
-              </button>
-            ))}
-          </div>
+      <div className="rounded-2xl border border-sky-200 bg-sky-50 p-3">
+        <p className="text-sm font-semibold text-sky-900">Contas de teste</p>
+        <p className="mt-1 text-xs text-sky-800">Palavra-passe para todas: {DEMO_PASSWORD}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {DEMO_USERS.map((user) => (
+            <button
+              key={user.email}
+              type="button"
+              onClick={() => {
+                setEmail(user.email);
+                setPassword(DEMO_PASSWORD);
+                setError(null);
+              }}
+              className="rounded-xl border border-sky-300 bg-white px-3 py-1.5 text-xs font-semibold text-sky-900 hover:bg-sky-100"
+            >
+              {user.label}
+            </button>
+          ))}
         </div>
-      ) : null}
+      </div>
     </form>
   );
 }

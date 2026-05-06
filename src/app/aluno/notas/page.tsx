@@ -4,6 +4,7 @@ import {
   createSubjectFormAction,
   deleteMarkFormAction,
   deleteSubjectFormAction,
+  getStudentBenchmarkBySubject,
   listMarks,
   listSubjects,
 } from "@/app/actions/student-data";
@@ -12,7 +13,12 @@ type Props = { searchParams: Promise<{ error?: string }> };
 
 export default async function NotasPage({ searchParams }: Props) {
   const sp = await searchParams;
-  const [subjects, marks] = await Promise.all([listSubjects(), listMarks()]);
+  const [subjects, marks, benchmarks] = await Promise.all([
+    listSubjects(),
+    listMarks(),
+    getStudentBenchmarkBySubject(5),
+  ]);
+  const benchmarkByName = new Map(benchmarks.map((b) => [b.subjectNameKey, b]));
 
   const bySubject = subjects.map((s) => {
     const ms = marks.filter((m) => m.subjectId === s.id);
@@ -24,7 +30,8 @@ export default async function NotasPage({ searchParams }: Props) {
             0,
           ) / wSum
         : null;
-    return { subject: s, marks: ms, avg };
+    const benchmark = benchmarkByName.get(s.name.trim().toLowerCase()) ?? null;
+    return { subject: s, marks: ms, avg, benchmark };
   });
 
   return (
@@ -56,7 +63,7 @@ export default async function NotasPage({ searchParams }: Props) {
         <p className="text-sm text-slate-500">Adiciona uma disciplina para começar a registar notas.</p>
       ) : (
         <div className="space-y-4">
-          {bySubject.map(({ subject, marks: ms, avg }) => (
+          {bySubject.map(({ subject, marks: ms, avg, benchmark }) => (
             <section
               key={subject.id}
               className="duo-card"
@@ -72,6 +79,27 @@ export default async function NotasPage({ searchParams }: Props) {
                       </span>
                     </p>
                   )}
+                  {benchmark?.cohortAvg20 !== null && avg !== null ? (
+                    <p className="text-sm text-slate-600">
+                      Comparação com média ({benchmark.cohortSize} alunos):{" "}
+                      <span className="font-semibold tabular-nums text-slate-900">
+                        {benchmark.cohortAvg20.toFixed(1)} / 20
+                      </span>{" "}
+                      ·{" "}
+                      <span
+                        className={`font-semibold ${
+                          avg - benchmark.cohortAvg20 >= 0 ? "text-emerald-700" : "text-amber-700"
+                        }`}
+                      >
+                        {avg - benchmark.cohortAvg20 >= 0 ? "+" : ""}
+                        {(avg - benchmark.cohortAvg20).toFixed(1)}
+                      </span>
+                    </p>
+                  ) : benchmark && benchmark.cohortSize > 0 && benchmark.cohortSize < 5 ? (
+                    <p className="text-xs text-slate-500">
+                      Comparação indisponível (precisa de pelo menos 5 alunos com notas nesta disciplina).
+                    </p>
+                  ) : null}
                 </div>
                 <form action={deleteSubjectFormAction}>
                   <input type="hidden" name="id" value={subject.id} />

@@ -64,28 +64,53 @@ export default async function Home() {
             {[
               {
                 title: "Aluno",
-                emoji: "🎯",
+                icon: "student",
                 desc: "Vê trabalhos por entregar, organiza blocos de estudo e acompanha notas sem confusão.",
                 tone: "from-orange-50/80 to-white border-orange-100",
+                logoTone: "bg-orange-100 text-orange-700 ring-orange-200",
               },
               {
                 title: "Professor",
-                emoji: "📚",
+                icon: "teacher",
                 desc: "Cria turmas, atribui tarefas em segundos e monta programas de estudo para cada aluno.",
                 tone: "from-teal-50/80 to-white border-teal-100",
+                logoTone: "bg-teal-100 text-teal-700 ring-teal-200",
               },
               {
                 title: "Encarregado",
-                emoji: "🤝",
+                icon: "parent",
                 desc: "Acompanha progresso com clareza e apoia o estudo com informação útil e simples.",
                 tone: "from-violet-50/80 to-white border-violet-100",
+                logoTone: "bg-violet-100 text-violet-700 ring-violet-200",
               },
             ].map((item) => (
               <article
                 key={item.title}
                 className={`duo-card border bg-gradient-to-br p-5 transition hover:-translate-y-0.5 ${item.tone}`}
               >
-                <p className="text-2xl">{item.emoji}</p>
+                <span
+                  className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl text-sm font-bold ring-1 ${item.logoTone}`}
+                >
+                  {item.icon === "student" ? (
+                    <svg viewBox="0 0 24 24" aria-hidden className="h-5 w-5 fill-none stroke-current stroke-[1.8]">
+                      <path d="M3 9.5 12 5l9 4.5-9 4.5L3 9.5Z" />
+                      <path d="M7 11.5v4.2c0 .8 2.2 2.3 5 2.3s5-1.5 5-2.3v-4.2" />
+                    </svg>
+                  ) : item.icon === "teacher" ? (
+                    <svg viewBox="0 0 24 24" aria-hidden className="h-5 w-5 fill-none stroke-current stroke-[1.8]">
+                      <path d="M4 7.5h16v9H4z" />
+                      <path d="M9 17v2.5m6-2.5v2.5M7 20h10" />
+                      <path d="M8 10h8m-8 3h5" />
+                    </svg>
+                  ) : (
+                    <svg viewBox="0 0 24 24" aria-hidden className="h-5 w-5 fill-none stroke-current stroke-[1.8]">
+                      <circle cx="9" cy="9" r="2.5" />
+                      <circle cx="15" cy="9.5" r="2" />
+                      <path d="M4.5 18c.5-2.3 2.2-3.8 4.5-3.8S13 15.7 13.5 18" />
+                      <path d="M13 17.5c.4-1.7 1.6-2.8 3.4-2.8 1.7 0 2.9 1.1 3.3 2.8" />
+                    </svg>
+                  )}
+                </span>
                 <h2 className="mt-2 text-lg font-semibold text-slate-900">{item.title}</h2>
                 <p className="mt-2 text-sm text-slate-700">{item.desc}</p>
               </article>

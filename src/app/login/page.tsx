@@ -3,8 +3,6 @@ import { Suspense } from "react";
 import { LoginForm } from "./login-form";
 
 export default function LoginPage() {
-  const showDemoAccounts = process.env.NEXT_PUBLIC_ENABLE_DEMO_ACCOUNTS === "true";
-
   return (
     <div className="min-h-screen bg-[#f8f6f2]">
       <div className="mx-auto flex min-h-screen w-full max-w-[1200px] flex-col justify-center px-3 py-8">
@@ -36,31 +34,27 @@ export default function LoginPage() {
           <div className="duo-card p-6 md:p-8">
             <h1 className="duo-page-title text-2xl">Entrar</h1>
             <p className="mt-1 text-sm text-slate-600">Acede à tua conta Coach de Estudo.</p>
-            {showDemoAccounts ? (
-              <>
-                <p className="mt-3 text-xs font-medium text-slate-500">Password demo (todas): Pass1234!</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Link
-                    href="/login?demo=teacher"
-                    className="duo-btn-soft rounded-xl px-3 py-1.5 text-xs font-semibold text-teal-800"
-                  >
-                    Exemplo Teacher
-                  </Link>
-                  <Link
-                    href="/login?demo=student"
-                    className="duo-btn-soft rounded-xl px-3 py-1.5 text-xs font-semibold text-orange-900"
-                  >
-                    Exemplo Student
-                  </Link>
-                  <Link
-                    href="/login?demo=parent"
-                    className="duo-btn-soft rounded-xl px-3 py-1.5 text-xs font-semibold text-violet-900"
-                  >
-                    Exemplo Parent
-                  </Link>
-                </div>
-              </>
-            ) : null}
+            <p className="mt-3 text-xs font-medium text-slate-500">Password demo (todas): Pass1234!</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Link
+                href="/login?demo=teacher"
+                className="duo-btn-soft rounded-xl px-3 py-1.5 text-xs font-semibold text-teal-800"
+              >
+                Exemplo Teacher
+              </Link>
+              <Link
+                href="/login?demo=student"
+                className="duo-btn-soft rounded-xl px-3 py-1.5 text-xs font-semibold text-orange-900"
+              >
+                Exemplo Student
+              </Link>
+              <Link
+                href="/login?demo=parent"
+                className="duo-btn-soft rounded-xl px-3 py-1.5 text-xs font-semibold text-violet-900"
+              >
+                Exemplo Parent
+              </Link>
+            </div>
             <div className="mt-6">
               <Suspense fallback={<p className="text-sm text-slate-500">A carregar…</p>}>
                 <LoginForm />

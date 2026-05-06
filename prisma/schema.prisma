@@ -40,6 +40,11 @@ enum DifficultySeverity {
   ALTA
 }
 
+enum GoalStatus {
+  ATIVO
+  CONCLUIDO
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -67,8 +72,11 @@ model User {
   homeworks         Homework[] @relation("StudentHomework")
   homeworksAssigned Homework[] @relation("TeacherHomework")
   studyBlocks       StudyBlock[]
-  difficulties Difficulty[]
-  subjects    Subject[]
+  difficulties      Difficulty[]
+  subjects          Subject[]
+  goals             Goal[]
+  goalSteps         GoalStep[]
+  actionLogs        StudentActionLog[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -244,4 +252,57 @@ model Difficulty {
   updatedAt DateTime @updatedAt
 
   @@index([studentUserId])
+}
+
+model Goal {
+  id            String     @id @default(cuid())
+  studentUserId String
+  subjectId     String?
+  title         String
+  description   String?
+  targetDate    DateTime?
+  status        GoalStatus @default(ATIVO)
+
+  student User     @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+  subject Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  steps   GoalStep[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentUserId, status])
+  @@index([subjectId])
+}
+
+model GoalStep {
+  id            String   @id @default(cuid())
+  goalId        String
+  studentUserId String
+  title         String
+  done          Boolean  @default(false)
+  doneAt        DateTime?
+
+  goal    Goal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+  student User @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([goalId, done])
+  @@index([studentUserId])
+}
+
+model StudentActionLog {
+  id            String   @id @default(cuid())
+  studentUserId String
+  title         String
+  notes         String?
+  happenedAt    DateTime @default(now())
+
+  student User @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentUserId, happenedAt])
 }

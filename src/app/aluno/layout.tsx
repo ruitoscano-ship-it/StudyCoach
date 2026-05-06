@@ -7,6 +7,8 @@ const links = [
   { href: "/aluno/notas", label: "Notas" },
   { href: "/aluno/trabalhos", label: "Trabalhos" },
   { href: "/aluno/plano", label: "Plano" },
+  { href: "/aluno/objetivos", label: "Objetivos" },
+  { href: "/aluno/perfil", label: "Perfil" },
   { href: "/aluno/dificuldades", label: "Dificuldades" },
   { href: "/aluno/turma", label: "Turma" },
 ];
