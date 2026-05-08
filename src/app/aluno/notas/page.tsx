@@ -79,7 +79,7 @@ export default async function NotasPage({ searchParams }: Props) {
                       </span>
                     </p>
                   )}
-                  {benchmark?.cohortAvg20 !== null && avg !== null ? (
+                  {benchmark && benchmark.cohortAvg20 !== null && avg !== null ? (
                     <p className="text-sm text-slate-600">
                       Comparação com média ({benchmark.cohortSize} alunos):{" "}
                       <span className="font-semibold tabular-nums text-slate-900">

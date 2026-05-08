@@ -95,6 +95,13 @@ export async function getClassDetail(classId: string) {
           status: true,
           studentUserId: true,
           subject: { select: { name: true } },
+          comments: {
+            orderBy: { createdAt: "desc" },
+            include: {
+              author: { select: { id: true, name: true, role: true } },
+            },
+            take: 10,
+          },
         },
         orderBy: { dueAt: "desc" },
       },
@@ -181,6 +188,187 @@ export async function listClassDifficulties(classId: string) {
     orderBy: { createdAt: "desc" },
     take: 100,
   });
+}
+
+export async function listClassQuestions(classId: string) {
+  const { assertTeacherOwnsClass } = await import("@/lib/authz");
+  await assertTeacherOwnsClass(classId);
+
+  return prisma.studentQuestion.findMany({
+    where: {
+      student: {
+        enrollments: {
+          some: { classId },
+        },
+      },
+    },
+    include: {
+      student: { select: { id: true, name: true, email: true } },
+      homework: { select: { id: true, title: true } },
+      repliedBy: { select: { id: true, name: true } },
+    },
+    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    take: 100,
+  });
+}
+
+export async function enrollStudentByEmail(classId: string, email: string) {
+  const { assertTeacherOwnsClass } = await import("@/lib/authz");
+  await assertTeacherOwnsClass(classId);
+
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail) throw new Error("Indica o email do aluno.");
+
+  const student = await prisma.user.findFirst({
+    where: { email: normalizedEmail, role: "STUDENT" },
+    select: { id: true },
+  });
+  if (!student) throw new Error("Aluno não encontrado com este email.");
+
+  await prisma.enrollment.upsert({
+    where: {
+      classId_studentUserId: {
+        classId,
+        studentUserId: student.id,
+      },
+    },
+    create: {
+      classId,
+      studentUserId: student.id,
+    },
+    update: {},
+  });
+
+  revalidatePath(`/professor/turma/${classId}`);
+  revalidatePath("/professor");
+}
+
+export async function replyToStudentQuestion(
+  classId: string,
+  data: { questionId: string; reply: string },
+) {
+  const session = await requireTeacher();
+  const { assertTeacherOwnsClass } = await import("@/lib/authz");
+  await assertTeacherOwnsClass(classId);
+
+  const reply = data.reply.trim();
+  if (!reply) throw new Error("Indica a resposta ao aluno.");
+
+  const question = await prisma.studentQuestion.findUnique({
+    where: { id: data.questionId },
+    include: {
+      student: {
+        select: {
+          enrollments: {
+            where: { classId },
+            select: { id: true },
+          },
+        },
+      },
+    },
+  });
+  if (!question || question.student.enrollments.length === 0) {
+    throw new Error("Pergunta não encontrada nesta turma.");
+  }
+
+  await prisma.studentQuestion.update({
+    where: { id: question.id },
+    data: {
+      reply,
+      status: "RESPONDIDA",
+      repliedAt: new Date(),
+      repliedByUserId: session.user.id,
+    },
+  });
+
+  revalidatePath(`/professor/turma/${classId}`);
+  revalidatePath("/aluno/trabalhos");
+}
+
+export async function addHomeworkCommentByTeacher(
+  classId: string,
+  data: { homeworkId: string; comment: string },
+) {
+  const session = await requireTeacher();
+  const { assertTeacherOwnsClass } = await import("@/lib/authz");
+  await assertTeacherOwnsClass(classId);
+
+  const comment = data.comment.trim();
+  if (!comment) throw new Error("Escreve o comentário.");
+
+  const homework = await prisma.homework.findFirst({
+    where: { id: data.homeworkId, classId },
+    select: { id: true },
+  });
+  if (!homework) throw new Error("Trabalho não encontrado na turma.");
+
+  await prisma.homeworkComment.create({
+    data: {
+      homeworkId: homework.id,
+      authorUserId: session.user.id,
+      comment,
+    },
+  });
+
+  revalidatePath(`/professor/turma/${classId}`);
+  revalidatePath("/aluno/trabalhos");
+}
+
+export async function setGoalForStudentInClass(
+  classId: string,
+  data: {
+    studentUserId: string;
+    title: string;
+    description?: string;
+    targetDate?: string;
+    subjectName?: string;
+  },
+) {
+  const session = await requireTeacher();
+  const { assertTeacherOwnsClass } = await import("@/lib/authz");
+  await assertTeacherOwnsClass(classId);
+
+  const studentId = data.studentUserId.trim();
+  if (!studentId) throw new Error("Seleciona um aluno.");
+  const title = data.title.trim();
+  if (!title) throw new Error("Indica o objetivo.");
+
+  const enrollment = await prisma.enrollment.findFirst({
+    where: { classId, studentUserId: studentId },
+    select: { id: true },
+  });
+  if (!enrollment) throw new Error("O aluno não está inscrito nesta turma.");
+
+  let subjectId: string | null = null;
+  if (data.subjectName?.trim()) {
+    const subject = await prisma.subject.create({
+      data: {
+        name: data.subjectName.trim(),
+        classId,
+        studentUserId: studentId,
+      },
+    });
+    subjectId = subject.id;
+  }
+
+  const targetDate =
+    data.targetDate && data.targetDate.trim() ? new Date(data.targetDate.trim()) : null;
+  if (targetDate && Number.isNaN(targetDate.getTime())) throw new Error("Data alvo inválida.");
+
+  await prisma.goal.create({
+    data: {
+      studentUserId: studentId,
+      title,
+      description: data.description?.trim() || null,
+      targetDate,
+      subjectId,
+      status: "ATIVO",
+      createdByTeacherId: session.user.id,
+    },
+  });
+
+  revalidatePath(`/professor/turma/${classId}`);
+  revalidatePath("/aluno/objetivos");
 }
 
 export async function createStudyProgramAndScheduleForStudent(
@@ -314,6 +502,66 @@ export async function createStudyProgramFormAction(formData: FormData) {
       startAt: String(formData.get("startAt") ?? ""),
       endAt: String(formData.get("endAt") ?? ""),
       notes: String(formData.get("notes") ?? "") || undefined,
+      subjectName: String(formData.get("subjectName") ?? "") || undefined,
+    });
+  } catch (e) {
+    redirect(
+      `/professor/turma/${classId}?error=${encodeURIComponent(e instanceof Error ? e.message : "Erro")}`,
+    );
+  }
+  redirect(`/professor/turma/${classId}`);
+}
+
+export async function enrollStudentByEmailFormAction(formData: FormData) {
+  const classId = String(formData.get("classId") ?? "");
+  try {
+    await enrollStudentByEmail(classId, String(formData.get("email") ?? ""));
+  } catch (e) {
+    redirect(
+      `/professor/turma/${classId}?error=${encodeURIComponent(e instanceof Error ? e.message : "Erro")}`,
+    );
+  }
+  redirect(`/professor/turma/${classId}`);
+}
+
+export async function replyToStudentQuestionFormAction(formData: FormData) {
+  const classId = String(formData.get("classId") ?? "");
+  try {
+    await replyToStudentQuestion(classId, {
+      questionId: String(formData.get("questionId") ?? ""),
+      reply: String(formData.get("reply") ?? ""),
+    });
+  } catch (e) {
+    redirect(
+      `/professor/turma/${classId}?error=${encodeURIComponent(e instanceof Error ? e.message : "Erro")}`,
+    );
+  }
+  redirect(`/professor/turma/${classId}`);
+}
+
+export async function addHomeworkCommentByTeacherFormAction(formData: FormData) {
+  const classId = String(formData.get("classId") ?? "");
+  try {
+    await addHomeworkCommentByTeacher(classId, {
+      homeworkId: String(formData.get("homeworkId") ?? ""),
+      comment: String(formData.get("comment") ?? ""),
+    });
+  } catch (e) {
+    redirect(
+      `/professor/turma/${classId}?error=${encodeURIComponent(e instanceof Error ? e.message : "Erro")}`,
+    );
+  }
+  redirect(`/professor/turma/${classId}`);
+}
+
+export async function setGoalForStudentInClassFormAction(formData: FormData) {
+  const classId = String(formData.get("classId") ?? "");
+  try {
+    await setGoalForStudentInClass(classId, {
+      studentUserId: String(formData.get("studentUserId") ?? ""),
+      title: String(formData.get("title") ?? ""),
+      description: String(formData.get("description") ?? "") || undefined,
+      targetDate: String(formData.get("targetDate") ?? "") || undefined,
       subjectName: String(formData.get("subjectName") ?? "") || undefined,
     });
   } catch (e) {

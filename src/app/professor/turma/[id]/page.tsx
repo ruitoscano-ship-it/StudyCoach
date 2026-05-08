@@ -2,10 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ErrorBanner } from "@/components/error-banner";
 import {
+  addHomeworkCommentByTeacherFormAction,
   assignHomeworkFormAction,
   createStudyProgramFormAction,
+  enrollStudentByEmailFormAction,
   getClassDetail,
   listClassDifficulties,
+  listClassQuestions,
+  replyToStudentQuestionFormAction,
+  setGoalForStudentInClassFormAction,
 } from "@/app/actions/class";
 
 type Props = {
@@ -58,6 +63,7 @@ export default async function TurmaDetailPage({ params, searchParams }: Props) {
   if (!cls) notFound();
 
   const difficulties = await listClassDifficulties(id);
+  const questions = await listClassQuestions(id);
   const totalStudents = cls.enrollments.length;
   const activeHomeworks = cls.homeworks.filter((h) => h.status !== "CONCLUIDO").length;
 
@@ -220,6 +226,22 @@ export default async function TurmaDetailPage({ params, searchParams }: Props) {
 
       <section className="duo-card">
         <h2 className="text-base font-semibold text-slate-900">Alunos inscritos</h2>
+        <form action={enrollStudentByEmailFormAction} className="mt-3 flex flex-wrap items-end gap-2">
+          <input type="hidden" name="classId" value={cls.id} />
+          <label className="text-sm text-slate-700">
+            Email do aluno
+            <input
+              name="email"
+              type="email"
+              required
+              placeholder="aluno@escola.pt"
+              className="duo-input mt-1 min-w-[260px]"
+            />
+          </label>
+          <button type="submit" className="duo-btn-soft px-4 py-2">
+            Inscrever aluno
+          </button>
+        </form>
         {cls.enrollments.length === 0 ? (
           <p className="mt-2 text-sm text-slate-500">Nenhum aluno entrou ainda com o código.</p>
         ) : (
@@ -325,11 +347,58 @@ export default async function TurmaDetailPage({ params, searchParams }: Props) {
       </section>
 
       <section className="duo-card">
+        <h2 className="text-base font-semibold text-slate-900">Definir objetivo por aluno</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          O objetivo fica disponível no espaço do aluno para acompanhamento semanal.
+        </p>
+        {cls.enrollments.length === 0 ? (
+          <p className="mt-3 text-sm text-slate-500">Adiciona alunos para começares a definir metas.</p>
+        ) : (
+          <form action={setGoalForStudentInClassFormAction} className="mt-4 grid gap-3 sm:grid-cols-2">
+            <input type="hidden" name="classId" value={cls.id} />
+            <label className="text-sm text-slate-700 sm:col-span-2">
+              Aluno
+              <select name="studentUserId" required className="duo-select">
+                <option value="">Selecionar aluno</option>
+                {cls.enrollments.map((e) => (
+                  <option key={e.id} value={e.student.id}>
+                    {e.student.name ?? e.student.email}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm text-slate-700 sm:col-span-2">
+              Objetivo
+              <input name="title" required className="duo-input" placeholder="Ex.: Melhorar média para 14 valores" />
+            </label>
+            <label className="text-sm text-slate-700">
+              Data alvo (opcional)
+              <input name="targetDate" type="date" className="duo-input" />
+            </label>
+            <label className="text-sm text-slate-700">
+              Disciplina (opcional)
+              <input name="subjectName" className="duo-input" placeholder="Ex.: Matemática" />
+            </label>
+            <label className="text-sm text-slate-700 sm:col-span-2">
+              Descrição (opcional)
+              <input name="description" className="duo-input" placeholder="Critérios de sucesso e passos sugeridos" />
+            </label>
+            <div className="sm:col-span-2">
+              <button type="submit" className="duo-btn w-fit">
+                Guardar objetivo
+              </button>
+            </div>
+          </form>
+        )}
+      </section>
+
+      <section className="duo-card">
         <h2 className="text-base font-semibold text-slate-900">
           Dificuldades partilhadas pelos alunos
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Só aparecem entradas em que o aluno marcou partilha com o professor.
+          Só aparecem entradas em que o aluno marcou partilha com o professor. Podes converter cada dificuldade
+          em ações concretas com um programa de estudo, comentário num TPC, ou meta personalizada.
         </p>
         {difficulties.length === 0 ? (
           <p className="mt-3 text-sm text-slate-500">Nada a mostrar.</p>
@@ -345,6 +414,96 @@ export default async function TurmaDetailPage({ params, searchParams }: Props) {
               </li>
             ))}
           </ul>
+        )}
+      </section>
+
+      <section className="duo-card">
+        <h2 className="text-base font-semibold text-slate-900">Perguntas dos alunos</h2>
+        <p className="mt-1 text-sm text-slate-600">Responde às dúvidas e deixa histórico da orientação dada.</p>
+        {questions.length === 0 ? (
+          <p className="mt-3 text-sm text-slate-500">Sem perguntas nesta turma.</p>
+        ) : (
+          <ul className="mt-3 space-y-3 text-sm">
+            {questions.map((q) => (
+              <li key={q.id} className="rounded-xl border border-slate-200 p-3">
+                <p className="font-medium text-slate-900">{q.student.name ?? q.student.email}</p>
+                <p className="mt-1 text-slate-800">{q.question}</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {q.homework?.title ? `TPC: ${q.homework.title} · ` : ""}
+                  {q.status === "RESPONDIDA" ? "Respondida" : "Aberta"}
+                </p>
+                {q.reply ? (
+                  <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-emerald-900">
+                    Resposta: {q.reply}
+                  </p>
+                ) : null}
+                {q.status === "ABERTA" ? (
+                  <form action={replyToStudentQuestionFormAction} className="mt-3 flex flex-wrap items-center gap-2">
+                    <input type="hidden" name="classId" value={cls.id} />
+                    <input type="hidden" name="questionId" value={q.id} />
+                    <input
+                      name="reply"
+                      required
+                      placeholder="Responder ao aluno..."
+                      className="duo-input mt-0 min-w-[280px] flex-1"
+                    />
+                    <button type="submit" className="duo-btn-soft px-3 py-2 text-sm">
+                      Responder
+                    </button>
+                  </form>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="duo-card">
+        <h2 className="text-base font-semibold text-slate-900">Comentário ao trabalho dos alunos</h2>
+        {cls.homeworks.length === 0 ? (
+          <p className="mt-2 text-sm text-slate-500">Ainda não há TPC para comentar.</p>
+        ) : (
+          <>
+            <form action={addHomeworkCommentByTeacherFormAction} className="mt-3 grid gap-3 sm:grid-cols-2">
+              <input type="hidden" name="classId" value={cls.id} />
+              <label className="text-sm text-slate-700 sm:col-span-2">
+                Trabalho
+                <select name="homeworkId" required className="duo-select">
+                  <option value="">Selecionar TPC</option>
+                  {cls.homeworks.map((hw) => (
+                    <option key={hw.id} value={hw.id}>
+                      {hw.title} · {hw.subject?.name ?? "Sem disciplina"}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-sm text-slate-700 sm:col-span-2">
+                Comentário
+                <input name="comment" required className="duo-input" placeholder="Feedback específico e próximo passo" />
+              </label>
+              <div className="sm:col-span-2">
+                <button type="submit" className="duo-btn-soft px-4 py-2">
+                  Guardar comentário
+                </button>
+              </div>
+            </form>
+
+            <ul className="mt-4 space-y-2 text-sm">
+              {cls.homeworks
+                .filter((hw) => hw.comments.length > 0)
+                .slice(0, 10)
+                .map((hw) => (
+                  <li key={hw.id} className="rounded-xl border border-slate-200 p-3">
+                    <p className="font-medium text-slate-900">{hw.title}</p>
+                    {hw.comments.slice(0, 2).map((comment) => (
+                      <p key={comment.id} className="mt-1 text-slate-700">
+                        {comment.author.name ?? "Professor"}: {comment.comment}
+                      </p>
+                    ))}
+                  </li>
+                ))}
+            </ul>
+          </>
         )}
       </section>
     </div>

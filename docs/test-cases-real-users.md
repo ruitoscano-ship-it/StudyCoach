@@ -50,30 +50,48 @@
 12. **Parent sees linked student updates**
    - Expected: parent dashboard shows only linked students.
 
+### C.1) Teacher Operational Stories
+
+13. **Teacher views shared student difficulties and proposes action**
+   - Steps: open class detail with shared difficulties, create one study program or class homework from that context.
+   - Expected: action is persisted and visible in teacher/student areas.
+14. **Student asks question and teacher replies**
+   - Steps: student submits question in homework page, teacher replies in class detail.
+   - Expected: question transitions from open to answered and reply appears to student.
+15. **Teacher comments student work**
+   - Steps: teacher adds comment on homework.
+   - Expected: comment appears in student homework comments panel.
+16. **Teacher enrolls student by email**
+   - Steps: teacher inserts student email in class detail enrollment form.
+   - Expected: enrollment exists once (idempotent if repeated).
+17. **Teacher sets per-student goal**
+   - Steps: teacher creates goal for enrolled student.
+   - Expected: goal appears in student goals list as active.
+
 ### D) Guardian Invite Security
 
-13. **Invite accept happy path**
+18. **Invite accept happy path**
    - Expected: pending link becomes accepted and bound to parent.
-14. **Invite replay attempt**
+19. **Invite replay attempt**
    - Steps: accept same token twice.
    - Expected: second attempt rejected.
-15. **Invalid token**
+20. **Invalid token**
    - Expected: safe error response, no state mutation.
 
 ### E) Data and Migration Safety
 
-16. **Dev startup with db push**
+21. **Dev startup with db push**
    - Expected: app starts in development with schema sync.
-17. **Production startup without migrations**
+22. **Production startup without migrations**
    - Expected: container fails fast with clear error.
-18. **Production startup with migrations**
+23. **Production startup with migrations**
    - Expected: `prisma migrate deploy` runs and app starts.
 
 ### F) Reliability / UX / Performance
 
-19. **Health endpoint**
+24. **Health endpoint**
    - Expected: `/api/health` returns healthy with DB reachable.
-20. **Basic performance smoke**
+25. **Basic performance smoke**
    - Expected: key pages render under acceptable threshold in local/online env.
 
 ## Mapping to Automated Suites
@@ -93,7 +111,7 @@
 
 ## Go/No-Go Criteria for Online Stage
 
-- All 20 critical tests pass.
+- All 25 critical tests pass.
 - No unresolved critical/high security defects.
 - Migration pipeline validated in a production-like environment.
 - Monitoring/alert baseline enabled.

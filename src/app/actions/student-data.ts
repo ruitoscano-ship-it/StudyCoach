@@ -241,6 +241,76 @@ export async function deleteHomework(id: string) {
   rev();
 }
 
+export async function listStudentQuestions() {
+  const session = await requireStudent();
+  return prisma.studentQuestion.findMany({
+    where: { studentUserId: session.user.id },
+    include: {
+      homework: { select: { id: true, title: true } },
+      repliedBy: { select: { id: true, name: true } },
+    },
+    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    take: 100,
+  });
+}
+
+export async function createStudentQuestion(data: {
+  homeworkId?: string;
+  question: string;
+}) {
+  const session = await requireStudent();
+  const question = data.question.trim();
+  if (!question) throw new Error("Escreve a tua dúvida.");
+
+  let homeworkId: string | null = null;
+  if (data.homeworkId) {
+    const homework = await prisma.homework.findFirst({
+      where: { id: data.homeworkId, studentUserId: session.user.id },
+      select: { id: true },
+    });
+    if (!homework) throw new Error("Trabalho inválido para esta dúvida.");
+    homeworkId = homework.id;
+  }
+
+  await prisma.studentQuestion.create({
+    data: {
+      studentUserId: session.user.id,
+      homeworkId,
+      question,
+      status: "ABERTA",
+    },
+  });
+  rev();
+}
+
+export async function closeStudentQuestion(questionId: string) {
+  const session = await requireStudent();
+  const question = await prisma.studentQuestion.findFirst({
+    where: { id: questionId, studentUserId: session.user.id },
+    select: { id: true },
+  });
+  if (!question) throw new Error("Dúvida não encontrada.");
+
+  await prisma.studentQuestion.update({
+    where: { id: question.id },
+    data: { status: "RESPONDIDA" },
+  });
+  rev();
+}
+
+export async function listHomeworkCommentsForStudent() {
+  const session = await requireStudent();
+  return prisma.homeworkComment.findMany({
+    where: { homework: { studentUserId: session.user.id } },
+    include: {
+      homework: { select: { id: true, title: true } },
+      author: { select: { id: true, name: true, role: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: 100,
+  });
+}
+
 export async function listStudyBlocks(range?: { start: string; end: string }) {
   const session = await requireStudent();
   const start = range?.start ? new Date(range.start) : undefined;
@@ -757,6 +827,27 @@ export async function updateHomeworkStatusFormAction(formData: FormData) {
 export async function deleteHomeworkFormAction(formData: FormData) {
   try {
     await deleteHomework(String(formData.get("id") ?? ""));
+  } catch (e) {
+    redirect(errPath("/aluno/trabalhos", e));
+  }
+  redirect("/aluno/trabalhos");
+}
+
+export async function createStudentQuestionFormAction(formData: FormData) {
+  try {
+    await createStudentQuestion({
+      homeworkId: String(formData.get("homeworkId") ?? "") || undefined,
+      question: String(formData.get("question") ?? ""),
+    });
+  } catch (e) {
+    redirect(errPath("/aluno/trabalhos", e));
+  }
+  redirect("/aluno/trabalhos");
+}
+
+export async function closeStudentQuestionFormAction(formData: FormData) {
+  try {
+    await closeStudentQuestion(String(formData.get("questionId") ?? ""));
   } catch (e) {
     redirect(errPath("/aluno/trabalhos", e));
   }

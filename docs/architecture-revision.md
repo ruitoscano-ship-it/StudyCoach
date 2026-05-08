@@ -95,3 +95,28 @@ flowchart LR
    - invite acceptance
    - role-sensitive actions.
 
+## Teacher Workflow Coverage (Implemented)
+
+The teacher workflow now covers four core classroom management stories:
+
+1. **Difficulty triage + proposed action**
+   - Teacher class detail shows only difficulties intentionally shared with teacher.
+   - Teacher can immediately propose actions via:
+     - class-wide homework assignment
+     - individual study program + schedule
+     - individual student goal creation.
+2. **Teacher replies and comments**
+   - Students can submit questions linked to specific homework (or general).
+   - Teachers can reply in-thread from class detail.
+   - Teachers can add comments to student homework for targeted feedback.
+3. **Teacher-driven enrollment**
+   - Teachers can enroll students by email in addition to invite-code self-enrollment.
+4. **Per-student goals**
+   - Teachers can create active goals for any enrolled student, with optional target date and subject.
+
+### Data model additions
+
+- `StudentQuestion` for student-teacher Q&A threads.
+- `HomeworkComment` for feedback on work items.
+- `Goal.createdByTeacherId` to identify teacher-authored goals.
+

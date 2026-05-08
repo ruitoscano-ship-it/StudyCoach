@@ -1,8 +1,12 @@
 import { ErrorBanner } from "@/components/error-banner";
 import {
+  closeStudentQuestionFormAction,
   createHomeworkFormAction,
+  createStudentQuestionFormAction,
   deleteHomeworkFormAction,
+  listHomeworkCommentsForStudent,
   listHomework,
+  listStudentQuestions,
   listSubjects,
   updateHomeworkStatusFormAction,
 } from "@/app/actions/student-data";
@@ -23,7 +27,12 @@ const statusStyles: Record<string, string> = {
 
 export default async function TrabalhosPage({ searchParams }: Props) {
   const sp = await searchParams;
-  const [subjects, homeworks] = await Promise.all([listSubjects(), listHomework()]);
+  const [subjects, homeworks, questions, comments] = await Promise.all([
+    listSubjects(),
+    listHomework(),
+    listStudentQuestions(),
+    listHomeworkCommentsForStudent(),
+  ]);
 
   return (
     <div className="space-y-8">
@@ -119,6 +128,78 @@ export default async function TrabalhosPage({ searchParams }: Props) {
                     </button>
                   </form>
                 </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="duo-card">
+        <h2 className="text-base font-semibold text-slate-900">Dúvidas para o professor</h2>
+        <form action={createStudentQuestionFormAction} className="mt-4 grid gap-3 sm:grid-cols-2">
+          <label className="text-sm text-slate-700 sm:col-span-2">
+            Trabalho (opcional)
+            <select name="homeworkId" className="duo-select">
+              <option value="">Sem TPC específico</option>
+              {homeworks.map((h) => (
+                <option key={h.id} value={h.id}>
+                  {h.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-sm text-slate-700 sm:col-span-2">
+            Pergunta
+            <input name="question" required className="duo-input" placeholder="Ex.: Não percebi o exercício 3." />
+          </label>
+          <div className="sm:col-span-2">
+            <button type="submit" className="duo-btn">
+              Enviar dúvida
+            </button>
+          </div>
+        </form>
+        <ul className="mt-4 space-y-2 text-sm">
+          {questions.map((q) => (
+            <li key={q.id} className="rounded-xl border border-slate-200 p-3">
+              <p className="text-slate-800">{q.question}</p>
+              <p className="mt-1 text-xs text-slate-500">
+                {q.homework?.title ? `TPC: ${q.homework.title} · ` : ""}
+                {q.status === "RESPONDIDA" ? "Respondida" : "Aberta"}
+              </p>
+              {q.reply ? (
+                <p className="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-emerald-900">{q.reply}</p>
+              ) : null}
+              {q.status !== "RESPONDIDA" ? (
+                <form action={closeStudentQuestionFormAction} className="mt-2">
+                  <input type="hidden" name="questionId" value={q.id} />
+                  <button type="submit" className="duo-btn-soft px-3 py-1.5 text-sm text-slate-700">
+                    Marcar como resolvida
+                  </button>
+                </form>
+              ) : null}
+            </li>
+          ))}
+          {questions.length === 0 ? <li className="text-slate-500">Sem dúvidas registadas.</li> : null}
+        </ul>
+      </section>
+
+      <section className="duo-card">
+        <h2 className="text-base font-semibold text-slate-900">Comentários dos professores</h2>
+        {comments.length === 0 ? (
+          <p className="mt-2 text-sm text-slate-500">Ainda não recebeste comentários nos trabalhos.</p>
+        ) : (
+          <ul className="mt-3 space-y-2 text-sm">
+            {comments.map((comment) => (
+              <li key={comment.id} className="rounded-xl border border-slate-200 p-3">
+                <p className="font-medium text-slate-900">{comment.homework.title}</p>
+                <p className="mt-1 text-slate-700">{comment.comment}</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  {comment.author.name ?? "Professor"} ·{" "}
+                  {new Date(comment.createdAt).toLocaleString("pt-PT", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })}
+                </p>
               </li>
             ))}
           </ul>

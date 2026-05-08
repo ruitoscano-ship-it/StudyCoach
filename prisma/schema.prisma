@@ -45,6 +45,11 @@ enum GoalStatus {
   CONCLUIDO
 }
 
+enum StudentQuestionStatus {
+  ABERTA
+  RESPONDIDA
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -77,6 +82,10 @@ model User {
   goals             Goal[]
   goalSteps         GoalStep[]
   actionLogs        StudentActionLog[]
+  questionsAsked    StudentQuestion[]    @relation("QuestionAuthor")
+  questionsReplied  StudentQuestion[]    @relation("QuestionResponder")
+  homeworkComments  HomeworkComment[]
+  teacherGoalsSet   Goal[]               @relation("TeacherSetGoals")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -160,6 +169,7 @@ model Subject {
   marks       Mark[]
   homeworks   Homework[]
   difficulties Difficulty[]
+  goals       Goal[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -207,6 +217,8 @@ model Homework {
   class   Class?  @relation(fields: [classId], references: [id], onDelete: SetNull)
 
   studyBlocks StudyBlock[]
+  questions   StudentQuestion[]
+  comments    HomeworkComment[]
 
   student User     @relation("StudentHomework", fields: [studentUserId], references: [id], onDelete: Cascade)
   subject Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
@@ -262,9 +274,11 @@ model Goal {
   description   String?
   targetDate    DateTime?
   status        GoalStatus @default(ATIVO)
+  createdByTeacherId String?
 
   student User     @relation(fields: [studentUserId], references: [id], onDelete: Cascade)
   subject Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  createdByTeacher User? @relation("TeacherSetGoals", fields: [createdByTeacherId], references: [id], onDelete: SetNull)
   steps   GoalStep[]
 
   createdAt DateTime @default(now())
@@ -272,6 +286,7 @@ model Goal {
 
   @@index([studentUserId, status])
   @@index([subjectId])
+  @@index([createdByTeacherId])
 }
 
 model GoalStep {
@@ -305,4 +320,41 @@ model StudentActionLog {
   updatedAt DateTime @updatedAt
 
   @@index([studentUserId, happenedAt])
+}
+
+model StudentQuestion {
+  id             String                @id @default(cuid())
+  studentUserId  String
+  homeworkId     String?
+  question       String
+  reply          String?
+  status         StudentQuestionStatus @default(ABERTA)
+  repliedByUserId String?
+  repliedAt      DateTime?
+
+  student   User      @relation("QuestionAuthor", fields: [studentUserId], references: [id], onDelete: Cascade)
+  homework  Homework? @relation(fields: [homeworkId], references: [id], onDelete: SetNull)
+  repliedBy User?     @relation("QuestionResponder", fields: [repliedByUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([studentUserId, status])
+  @@index([homeworkId])
+}
+
+model HomeworkComment {
+  id           String @id @default(cuid())
+  homeworkId   String
+  authorUserId String
+  comment      String
+
+  homework Homework @relation(fields: [homeworkId], references: [id], onDelete: Cascade)
+  author   User     @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([homeworkId, createdAt])
+  @@index([authorUserId])
 }
